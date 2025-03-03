@@ -65,3 +65,4 @@ SR*/udis86*/**/tests/difftest.sh
 midi-plugins/**/include
 !midi-plugins/xcom12/include
 midi-plugins/**/lib
+SR/build/*
