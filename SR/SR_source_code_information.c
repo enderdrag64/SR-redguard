@@ -677,6 +677,113 @@ static int SR_LoadSCI_symbol_renames(FILE *file)
     return 0;
 }
 
+static int SR_LoadSCI_input_patches(FILE *file)
+{
+    char buf[8192];
+    char *str1;
+    char *str2;
+    char *str3;
+    size_t length;
+    int items;
+    unsigned int address;
+    unsigned int patch_length;
+    unsigned int byte_value;
+    uint_fast32_t SecNum, RelAdr;
+    unsigned int index;
+
+    while (!feof(file))
+    {
+        /* read enters */
+        items = fscanf(file, "%8191[\n]", buf);
+
+        /* read line */
+        buf[0] = 0;
+        items = fscanf(file, "%8191[^\n]", buf);
+        if (items <= 0) continue;
+
+        length = strlen(buf);
+        if (length != 0 && buf[length - 1] == '\r')
+        {
+            length--;
+            buf[length] = 0;
+        }
+
+        if (length == 0) continue;
+
+        str1 = strchr(buf, ',');
+        if (str1 == NULL) continue;
+
+        *str1 = 0;
+        str1++;
+
+        str2 = strchr(str1, ',');
+        if (str2 == NULL) continue;
+
+        *str2 = 0;
+        str2++;
+
+        sscanf(buf, "loc_%X", &address);
+        sscanf(str1, "%i", &patch_length);
+
+        if (patch_length == 0) continue;
+
+        if (!SR_get_section_reladr(address, &SecNum, &RelAdr))
+        {
+            fprintf(stderr,
+                    "Warning: input patch address loc_%X is outside all sections\n",
+                    address);
+            continue;
+        }
+
+        if (RelAdr + patch_length > section[SecNum].size)
+        {
+            fprintf(stderr,
+                    "Warning: input patch loc_%X,%u extends past section boundary\n",
+                    address, patch_length);
+            continue;
+        }
+
+        str3 = str2;
+
+        for (index = 0; index < patch_length; index++)
+        {
+            while (*str3 == ' ' || *str3 == '\t')
+            {
+                str3++;
+            }
+
+            if (*str3 == 0)
+            {
+                fprintf(stderr,
+                        "Warning: input patch loc_%X is missing byte %u\n",
+                        address, index);
+                break;
+            }
+
+            if (sscanf(str3, "%2X", &byte_value) != 1)
+            {
+                fprintf(stderr,
+                        "Warning: invalid byte in input patch loc_%X\n",
+                        address);
+                break;
+            }
+
+            printf("replacing byte at loc_%X with %u\n", address, byte_value);
+
+            section[SecNum].adr[RelAdr + index] = (uint8_t)byte_value;
+
+            while (*str3 != 0 &&
+                   *str3 != ' ' &&
+                   *str3 != '\t')
+            {
+                str3++;
+            }
+        }
+    }
+
+    return 0;
+}
+
 int SR_LoadSCI(void)
 {
     const static char fixup_interpret_as_code[] = "fixup_interpret_as_code.sci";
@@ -685,6 +792,7 @@ int SR_LoadSCI(void)
     const static char code16_areas[] = "code16_areas.sci";
     const static char fixup_do_not_interpret_as_code[] = "fixup_do_not_interpret_as_code.sci";
     const static char symbol_renames[] = "symbol_renames.sci";
+    const static char input_patches[] = "input_patches.sci";
 //#if (OUTPUT_TYPE != OUT_DOS)
     const static char external_procedures[] = "external_procedures.sci";
     const static char force_functions[] = "force_functions.sci";
@@ -772,6 +880,19 @@ int SR_LoadSCI(void)
         fprintf(stderr, "\tLoading %s...\n", symbol_renames);
 
         ret = SR_LoadSCI_symbol_renames(f);
+
+        fclose(f);
+
+        if (ret) return ret;
+    }
+    
+
+    f = fopen(input_patches, "rt");
+    if (f != NULL)
+    {
+        fprintf(stderr, "\tLoading %s...\n", input_patches);
+
+        ret = SR_LoadSCI_input_patches(f);
 
         fclose(f);
 
