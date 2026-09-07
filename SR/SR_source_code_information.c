@@ -274,6 +274,86 @@ static int SR_LoadSCI_external_procedures(FILE *file)
     return 0;
 }
 
+static uint_fast32_t *force_function_list = NULL;
+static unsigned int force_function_count = 0;
+
+static int SR_LoadSCI_force_functions(FILE *file)
+{
+    char buf[8192];
+    size_t length;
+    int items;
+    unsigned int address;
+
+    while (!feof(file))
+    {
+        /* read enters */
+        items = fscanf(file, "%8191[\n]", buf);
+
+        /* read line */
+        buf[0] = 0;
+        items = fscanf(file, "%8191[^\n]", buf);
+        if (items <= 0) continue;
+
+        length = strlen(buf);
+        if (length != 0 && buf[length - 1] == '\r')
+        {
+            length--;
+            buf[length] = 0;
+        }
+
+        if (length == 0) continue;
+
+        if (sscanf(buf, "loc_%X", &address) != 1) continue;
+
+        force_function_list = (uint_fast32_t *) realloc(
+            force_function_list,
+            sizeof(uint_fast32_t) * (force_function_count + 1)
+        );
+
+        if (force_function_list == NULL)
+        {
+            force_function_count = 0;
+            return 1;
+        }
+
+        force_function_list[force_function_count] = address;
+        force_function_count++;
+    }
+
+    return 0;
+}
+
+void SR_apply_force_functions(void)
+{
+    unsigned int index;
+    unsigned int section_index;
+
+    for (index = 0; index < force_function_count; index++)
+    {
+        for (section_index = 0; section_index < num_sections; section_index++)
+        {
+            if (force_function_list[index] >= section[section_index].start &&
+                force_function_list[index] <= section[section_index].start + section[section_index].size)
+            {
+                SR_disassemble_add_address(
+                    section_index,
+                    force_function_list[index]
+                );
+
+                break;
+            }
+        }
+    }
+
+    if (force_function_list != NULL)
+    {
+        free(force_function_list);
+        force_function_list = NULL;
+    }
+
+    force_function_count = 0;
+}
+
 static int SR_LoadSCI_global_aliases(FILE *file)
 {
     char buf[8192];
