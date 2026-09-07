@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "SR_defs.h"
 #include "SR_vars.h"
 
@@ -662,6 +663,13 @@ static int SR_LoadSCI_symbol_renames(FILE *file)
         *str2 = 0;
 
         if (*buf == 0 || *str1 == 0) continue;
+
+        /* Normalize hexadecimal address to uppercase. */
+        for (char *p = buf+3; *p != 0; p++)
+        {
+            if (*p >= 'a' && *p <= 'f')
+                *p = toupper(*p);
+        }
 
         SR_add_symbol_rename(buf, str1);
     }

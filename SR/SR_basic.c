@@ -83,6 +83,7 @@ void SR_get_label(char *cbuf, uint_fast32_t Address)
     sprintf(cbuf, "loc_%X", (unsigned int) Address);
 
     new_name = SR_find_symbol_rename(cbuf);
+    
     if (new_name != NULL)
     {
         strcpy(cbuf, new_name);
