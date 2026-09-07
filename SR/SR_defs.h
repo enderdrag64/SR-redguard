@@ -45,7 +45,7 @@
 #define OUT_LLASM 7
 #define OUT_X64 8
 
-#define OUTPUT_TYPE  OUT_X86
+#define OUTPUT_TYPE  OUT_DOS
 
 
 #if (OUTPUT_TYPE != OUT_ORIG)

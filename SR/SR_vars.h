@@ -83,6 +83,8 @@ int SR_apply_fixup_info(void);
 int SR_full_disassembly(void);
 int SR_write_output(const char *fname);
 
+void SR_apply_force_functions(void);
+
 
 
 output_data *SR_disassemble_offset_init_output(unsigned int SecNum, uint_fast32_t offset, unsigned int length);

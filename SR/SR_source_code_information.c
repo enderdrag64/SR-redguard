@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "SR_defs.h"
 #include "SR_vars.h"
 
@@ -217,7 +218,7 @@ static int SR_LoadSCI_fixup_do_not_interpret_as_code(FILE *file)
     return 0;
 }
 
-#if (OUTPUT_TYPE != OUT_DOS)
+//#if (OUTPUT_TYPE != OUT_DOS)
 static int SR_LoadSCI_external_procedures(FILE *file)
 {
     char buf[8192];
@@ -536,7 +537,7 @@ static int SR_LoadSCI_instruction_flags(FILE *file)
 
     return 0;
 }
-#endif
+//#endif
 
 int SR_LoadSCI(void)
 {
@@ -545,8 +546,9 @@ int SR_LoadSCI(void)
     const static char noret_procedures[] = "noret_procedures.sci";
     const static char code16_areas[] = "code16_areas.sci";
     const static char fixup_do_not_interpret_as_code[] = "fixup_do_not_interpret_as_code.sci";
-#if (OUTPUT_TYPE != OUT_DOS)
+//#if (OUTPUT_TYPE != OUT_DOS)
     const static char external_procedures[] = "external_procedures.sci";
+    const static char force_functions[] = "force_functions.sci";
     const static char global_aliases[] = "global_aliases.sci";
     const static char instruction_replacements[] = "instruction_replacements.sci";
     const static char instruction_replacements_FPU[] = "instruction_replacements_FPU.sci";
@@ -555,7 +557,7 @@ int SR_LoadSCI(void)
     const static char unaligned_esp_areas[] = "unaligned_esp_areas.sci";
 #endif
     const static char instruction_flags[] = "instruction_flags.sci";
-#endif
+//#endif
     FILE *f;
     int ret;
 
@@ -625,13 +627,26 @@ int SR_LoadSCI(void)
     }
 
 
-#if (OUTPUT_TYPE != OUT_DOS)
+//#if (OUTPUT_TYPE != OUT_DOS)
     f = fopen(external_procedures, "rt");
     if (f != NULL)
     {
         fprintf(stderr, "\tLoading %s...\n", external_procedures);
 
         ret = SR_LoadSCI_external_procedures(f);
+
+        fclose(f);
+
+        if (ret) return ret;
+    }
+
+
+    f = fopen(force_functions, "rt");
+    if (f != NULL)
+    {
+        fprintf(stderr, "\tLoading %s...\n", force_functions);
+
+        ret = SR_LoadSCI_force_functions(f);
 
         fclose(f);
 
@@ -719,7 +734,7 @@ int SR_LoadSCI(void)
 
         if (ret) return ret;
     }
-#endif
+//#endif
 
     return 0;
 }

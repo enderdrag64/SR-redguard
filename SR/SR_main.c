@@ -358,6 +358,12 @@ int main (int argc, char *argv[])
 		return 4;
 	}
 
+
+	write_log_time(stderr);
+	fprintf(stderr, "Forcing functions...\n");
+	SR_apply_force_functions();
+
+
 	write_log_time(stderr);
 	fprintf(stderr, "Applying fixup...\n");
 	if ( SR_apply_fixup_info() != 0 )
