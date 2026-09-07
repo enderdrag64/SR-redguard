@@ -85,6 +85,9 @@ int SR_write_output(const char *fname);
 
 void SR_apply_force_functions(void);
 
+void SR_add_symbol_rename(const char *OldName, const char *NewName);
+const char *SR_find_symbol_rename(const char *OldName);
+
 
 
 output_data *SR_disassemble_offset_init_output(unsigned int SecNum, uint_fast32_t offset, unsigned int length);

@@ -255,9 +255,9 @@ int SR_disassemble_offset_win32(unsigned int Entry, uint_fast32_t offset)
     extrn_data *extrn, *extrn2;
     bound_data *bound;
     int finished, decoded_length, ret;
-    char cLabel[32];
-    char cResult[128];
-    char cResPart[128];
+    char cLabel[8096];
+    char cResult[9096];
+    char cResPart[9596];
 #if (OUTPUT_TYPE == OUT_LLASM)
     int prev_cjump_length, cur_cjump_length;
 

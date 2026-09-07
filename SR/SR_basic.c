@@ -78,7 +78,15 @@ int SR_initial_disassembly(void)
 
 void SR_get_label(char *cbuf, uint_fast32_t Address)
 {
+    const char *new_name;
+
     sprintf(cbuf, "loc_%X", (unsigned int) Address);
+
+    new_name = SR_find_symbol_rename(cbuf);
+    if (new_name != NULL)
+    {
+        strcpy(cbuf, new_name);
+    }
 }
 
 #if (OUTPUT_TYPE != OUT_ORIG && OUTPUT_TYPE != OUT_DOS)
@@ -129,9 +137,9 @@ static void SR_apply_fixup_data_init(fixup_data *item, void *data)
 
 static void SR_apply_fixup_data_offset(fixup_data *item, void *data)
 {
-    char cbuf[128];
-    char cbuf2[160];
-    char cbuf3[336];
+    char cbuf[8096];
+    char cbuf2[8115];
+    char cbuf3[8119];
     output_data *output;
     fixup_data *fixup;
     uint_fast32_t sec, ofs;
@@ -529,3 +537,47 @@ int SR_apply_fixup_info(void)
     return 0;
 }
 
+typedef struct _symbol_rename_ {
+    char *old_name;
+    char *new_name;
+    struct _symbol_rename_ *next;
+} symbol_rename;
+
+static symbol_rename *symbol_renames = NULL;
+
+void SR_add_symbol_rename(const char *OldName, const char *NewName)
+{
+    symbol_rename *item;
+
+    item = (symbol_rename *) malloc(sizeof(symbol_rename));
+    if (item == NULL) return;
+
+    item->old_name = strdup(OldName);
+    item->new_name = strdup(NewName);
+
+    if (item->old_name == NULL || item->new_name == NULL)
+    {
+        if (item->old_name != NULL) free(item->old_name);
+        if (item->new_name != NULL) free(item->new_name);
+        free(item);
+        return;
+    }
+
+    item->next = symbol_renames;
+    symbol_renames = item;
+}
+
+const char *SR_find_symbol_rename(const char *OldName)
+{
+    symbol_rename *item;
+
+    for (item = symbol_renames; item != NULL; item = item->next)
+    {
+        if (strcmp(item->old_name, OldName) == 0)
+        {
+            return item->new_name;
+        }
+    }
+
+    return NULL;
+}

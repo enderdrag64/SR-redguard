@@ -213,7 +213,7 @@ enum byte_write_mode {
 };
 
 struct madr_result {
-    char madr[64];
+    char madr[809];
     int align;
     enum arm_regs memreg;
     char unaligned_madr[64];
@@ -306,7 +306,7 @@ static int SR_disassemble_fixup_operand(unsigned int Entry, const char *ostr, fi
 
 static void SR_get_fixup_label(char *cResult, const fixup_data *fixup, const extrn_data *extrn)
 {
-    char cLabel[32];
+    char cLabel[8096];
     int *label_value;
     output_data *output;
     uint_fast32_t sec, ofs;
@@ -2371,8 +2371,8 @@ int SR_disassemble_arm_instruction(unsigned int Entry, output_data *output, uint
 {
     char cOutput[8192];
     char cOutPart[384];
-    char cAddress[128];
-    char cLabel[128];
+    char cAddress[8096];
+    char cLabel[8096];
     fixup_data *fixup1, *fixup2, *fixup[3];
     extrn_data *extrn[3];
     uint_fast32_t cur_ofs, flags_write, flags_read;

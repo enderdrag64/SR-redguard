@@ -619,6 +619,56 @@ static int SR_LoadSCI_instruction_flags(FILE *file)
 }
 //#endif
 
+static int SR_LoadSCI_symbol_renames(FILE *file)
+{
+    char buf[8192];
+    char *str1;
+    char *str2;
+    size_t length;
+    int items;
+
+    while (!feof(file))
+    {
+        /* read enters */
+        items = fscanf(file, "%8191[\n]", buf);
+
+        /* read line */
+        buf[0] = 0;
+        items = fscanf(file, "%8191[^\n]", buf);
+        if (items <= 0) continue;
+
+        length = strlen(buf);
+        if (length != 0 && buf[length - 1] == '\r')
+        {
+            length--;
+            buf[length] = 0;
+        }
+
+        if (length == 0) continue;
+
+        str1 = strchr(buf, ',');
+        if (str1 == NULL) continue;
+
+        *str1 = 0;
+        str1++;
+
+        while (*str1 == ' ') str1++;
+
+        str2 = str1 + strlen(str1);
+        while (str2 > str1 && str2[-1] == ' ')
+        {
+            str2--;
+        }
+        *str2 = 0;
+
+        if (*buf == 0 || *str1 == 0) continue;
+
+        SR_add_symbol_rename(buf, str1);
+    }
+
+    return 0;
+}
+
 int SR_LoadSCI(void)
 {
     const static char fixup_interpret_as_code[] = "fixup_interpret_as_code.sci";
@@ -626,6 +676,7 @@ int SR_LoadSCI(void)
     const static char noret_procedures[] = "noret_procedures.sci";
     const static char code16_areas[] = "code16_areas.sci";
     const static char fixup_do_not_interpret_as_code[] = "fixup_do_not_interpret_as_code.sci";
+    const static char symbol_renames[] = "symbol_renames.sci";
 //#if (OUTPUT_TYPE != OUT_DOS)
     const static char external_procedures[] = "external_procedures.sci";
     const static char force_functions[] = "force_functions.sci";
@@ -700,6 +751,19 @@ int SR_LoadSCI(void)
         fprintf(stderr, "\tLoading %s...\n", fixup_do_not_interpret_as_code);
 
         ret = SR_LoadSCI_fixup_do_not_interpret_as_code(f);
+
+        fclose(f);
+
+        if (ret) return ret;
+    }
+
+    
+    f = fopen(symbol_renames, "rt");
+    if (f != NULL)
+    {
+        fprintf(stderr, "\tLoading %s...\n", symbol_renames);
+
+        ret = SR_LoadSCI_symbol_renames(f);
 
         fclose(f);
 

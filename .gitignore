@@ -71,3 +71,5 @@ midi-plugins/**/include
 midi-plugins/**/lib
 
 SR/build/*
+SRW/*
+SRW-games/*

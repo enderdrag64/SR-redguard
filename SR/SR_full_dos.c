@@ -84,7 +84,7 @@ void SR_disassemble_align_fixup(const fixup_data *fixup)
 
 int SR_disassemble_convert_cjump(char *dst, const char *modifier, uint_fast32_t address, const extrn_data *extrn)
 {
-    char cbuf[32];
+    char cbuf[8096];
     char *ostr, *str1;
     intptr_t length1;
 
@@ -123,7 +123,7 @@ int SR_disassemble_convert_cjump(char *dst, const char *modifier, uint_fast32_t 
 
 int SR_disassemble_convert_fixup(const char *ostr, char *dst, fixup_data *fixup, const extrn_data *extrn, int Entry, uint_fast32_t offset, int decoded_length)
 {
-    char cbuf[32];
+    char cbuf[8096];
     char *str1, *str2;
     int *label_value;
     output_data *output;
@@ -302,8 +302,8 @@ int SR_disassemble_offset_dos(unsigned int Entry, uint_fast32_t offset)
     fixup_data *fixup, *fixup2;
     extrn_data *extrn, *extrn2;
     int finished, decoded_length, ret;
-    char cLabel[32];
-    char cResult[128];
+    char cLabel[8096];
+    char cResult[8106];
     char cResPart[128];
 
     ud_set_input_buffer(&ud_obj, &(section[Entry].adr[offset]), section[Entry].size - offset);

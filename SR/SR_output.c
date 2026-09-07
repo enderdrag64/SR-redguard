@@ -55,7 +55,7 @@ static void SR_write_output_alias_global(alias_data *item, void *data)
 #ifdef _CHK_HACK
 static void SR_write_output__chk_hack(Word_t Index, void *data)
 {
-    char cbuf[32];
+    char cbuf[8096];
 
 #define DATA ((Entry_FILE *) data)
 
@@ -85,7 +85,7 @@ static void SR_write_output__chk_hack(Word_t Index, void *data)
 
 static void SR_write_output_line(output_data *item, void *data)
 {
-    char cbuf[16];
+    char cbuf[8096];
 
 #define DATA ((Entry_FILE *) data)
 
@@ -204,7 +204,7 @@ static void SR_write_llasm_output_hasdata(output_data *item, void *data)
 
 static void SR_write_llasm_output_function(output_data *item, void *data)
 {
-    char cbuf[16];
+    char cbuf[8096];
 
 #define DATA ((Entry_FILE *) data)
 
@@ -230,7 +230,7 @@ static void SR_write_llasm_output_function(output_data *item, void *data)
 
 static void SR_write_llasm_output_line(output_data *item, void *data)
 {
-    char cbuf[16];
+    char cbuf[8096];
 
 #define DATA ((Entry_FILE *) data)
 
@@ -304,7 +304,7 @@ int SR_write_output(const char *fname)
 
 #if (OUTPUT_TYPE == OUT_ORIG || OUTPUT_TYPE == OUT_DOS)
     {
-        char cbuf[32];
+        char cbuf[8096];
 
         SR_get_label(cbuf, section[EIPObjectNum].start + EIP);
         fprintf(EF.fout, "global %s\n", cbuf);
